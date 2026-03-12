@@ -1,52 +1,62 @@
-# Docker & Docker Compose Training Lab
+# Formation Pratique Docker & Docker Compose
 
-Welcome to the **Docker & Docker Compose** practical training track! This comprehensive repository contains a series of hands-on labs (TPs) designed to take you from an absolute beginner to an expert in containerization.
+Bienvenue dans le parcours de formation pratique **Docker & Docker Compose** ! Ce dépôt centralisé (site web statique) a été conçu pour vous amener d'un niveau grand débutant à un niveau expert en conteneurisation.
 
-## Course Structure
+## Structure du Cours
 
-This training is divided into progressive labs. Each lab focuses on specific concepts, building upon the knowledge gained in the previous ones.
+Ce parcours est divisé en TP (Travaux Pratiques) progressifs. Chaque labo se concentre sur des concepts spécifiques, en s'appuyant sur les connaissances acquises lors des précédents.
 
-| Lab | Difficulty | Topic | Description |
+| Labo | Difficulté | Thème | Description |
 |---|---|---|---|
-| [**TP-01**](./tp-01-docker-basics/) | Beginner | *Docker Basics* | Introduction to Docker CLI, pulling images, and running containers. |
-| [**TP-02**](./tp-02-docker-images/) | Beginner | *Building First Images* | Writing your first Dockerfile, building images, and running them. |
-| [**TP-03**](./tp-03-volumes-networks/) | Beginner | *Volumes and Networks* | Understanding data persistence and container communication. |
-| [**TP-04**](./tp-04-simple-webapp/) | Intermediate | *Simple Web App Stack* | Running multi-container applications (db + app) without Compose. |
-| [**TP-05**](./tp-05-dockerfile-best-practices/) | Intermediate | *Dockerfile Best Practices* | Linting Dockerfiles with Hadolint and applying optimization patterns. |
-| [**TP-06**](./tp-06-hadolint-integration/) | Intermediate | *Integrating Hadolint in CI* | Automating Dockerfile quality checks in Continuous Integration pipelines. |
-| [**TP-07**](./tp-07-trivy-image-scan/) | Advanced | *Image Security Scan* | Using Trivy to find and fix vulnerabilities in Docker images. |
-| [**TP-08**](./tp-08-docker-compose-beginner/) | Beginner | *Docker Compose Beginner* | Transitioning to Docker Compose to manage multi-container applications. |
-| [**TP-09**](./tp-09-docker-compose-intermediate/) | Intermediate | *Docker Compose Intermediate* | Using networks, volumes, and reverse proxies in Compose. |
-| [**TP-10**](./tp-10-docker-compose-advanced/) | Advanced | *Docker Compose Advanced* | Configuration management, resource limits, and healthchecks in Compose. |
-| [**TP-11**](./tp-11-observability-logs-health/) | Advanced | *Observability: Logs, Health* | Centralizing container logs and designing robust health checks. |
-| [**TP-12**](./tp-12-production-ready-stack/) | Expert | *Production-Ready Stack* | A complete lifecycle: best practices, CI/CD linting/scanning, and an optimized compose stack. |
+| **TP-01** | Débutant | *Bases Docker* | CLI Docker, téléchargement d'images, lancement de conteneurs. |
+| **TP-02** | Débutant | *Construire ses Images* | Écriture du premier Dockerfile, compilation d'images et cache. |
+| **TP-03** | Débutant | *Volumes et Réseaux* | Persistance des données et communication inter-conteneurs. |
+| **TP-04** | Intermédiaire | *Architecture Simple* | Exécution manuelle d'applications multi-conteneurs (Web + DB). |
+| **TP-05** | Intermédiaire | *Bonnes Pratiques* | Linting de Dockerfiles avec Hadolint et optimisation avancée. |
+| **TP-06** | Intermédiaire | *Intégration CI* | Automatisation du contrôle qualité des Dockerfiles (Pipeline Bash). |
+| **TP-07** | Avancé | *Sécurité et Audit* | Scan de vulnérabilités (CVEs) avec Trivy et remédiation. |
+| **TP-08** | Débutant | *Débuter avec Compose* | Simplification de l'orchestration locale avec `docker-compose.yml`. |
+| **TP-09** | Intermédiaire | *Compose Intermédiaire* | Réseaux isolés, volumes nommés, et reverse proxy simple. |
+| **TP-10** | Avancé | *Compose Avancé* | Healthchecks conditionnels, et limitations de ressources CPU/RAM. |
+| **TP-11** | Avancé | *Observabilité & Logs* | Pilotage des logs, rotation de fichiers JSON et sondes HTTP. |
+| **TP-12** | Expert | *Stack de Production* | Le chef-d'œuvre : Multi-stage builds, Nginx Ingress, sécurité maximale CI ! |
 
-## Prerequisites and Local Environment Setup
+## Prérequis et Environnement Local
 
-To follow these labs, ensure you have the following tools installed on your Linux (Ubuntu) or WSL2 environment:
+Pour suivre cette formation, assurez-vous de disposer des outils suivants (idéalement sous Linux Ubuntu ou Windows via WSL2) :
 
-1. **Docker Engine**: [Install Docker Engine](https://docs.docker.com/engine/install/)
-2. **Docker Compose Plugin**: [Install Docker Compose](https://docs.docker.com/compose/install/linux/)
-3. **Hadolint** (for TP-05+): [Install Hadolint](https://github.com/hadolint/hadolint#install)
-4. **Trivy** (for TP-07+): [Install Trivy](https://aquasecurity.github.io/trivy/latest/getting-started/installation/)
+1. **Docker Engine** : [Installer Docker](https://docs.docker.com/engine/install/)
+2. **Docker Compose** : Installé en tant que plugin CLI moderne.
+3. **Hadolint** : Utilisable en local ou à la volée via Docker.
+4. **Trivy** : Scanner Aqua-Security (utilisable via Docker).
 
-## Recommended Order
+## Comment utiliser cette formation ?
 
-We strongly advise you to follow the labs in numerical order (from TP-01 to TP-12), as complexity progressively increases.
+Toute la partie cours et explication se trouve concentrée dans le portail web statique accessible dans le dossier `docker-tps-site/`.
+Ouvrez simplement le fichier `docker-tps-site/index.html` dans votre navigateur Web préféré !
 
-## Cleaning Up Between Labs
+**Important** : Le code source (les TPs techniques) n'est plus éparpillé : en tant qu'apprenant, reprenez les consignes pas à pas depuis le site, et créez vos propres dossiers et fichiers techniques de A à Z par vous-même en suivant la formation. C'est la méthode "Do It Yourself" (DIY) qui prime ici !
 
-To keep your environment clean and prevent port or name collisions, use the following commands after finishing a lab:
+## Nettoyage des environnements
 
+Afin de ne pas surcharger votre machine entre deux travaux pratiques, pensez à nettoyer vos Docker :
 ```bash
-# Stop all running containers
+# Arrêter tous les conteneurs
 docker stop $(docker ps -aq) 2>/dev/null || true
 
-# Remove all stopped containers
+# Supprimer tous les conteneurs arrêtés
 docker rm $(docker ps -aq) 2>/dev/null || true
 
-# Stop and remove resources created by a docker-compose.yml (Run in the TP folder)
+# Nettoyer un écosystème Compose (depuis le dossier contenant le docker-compose.yml)
 docker compose down -v
 ```
 
-Enjoy the training!
+---
+
+## Auteur et Licence
+
+**KHLIFI HOUCEM / FORMATEUR DEVSECOPS && CLOUD**
+
+*Ce contenu pédagogique et ses éventuels codes sources attenants sont diffusés dans le cadre d'un apprentissage technique. Le matériel et l'architecture "DevOps" associée sont soumis aux règles de la formation ouverte.* 
+
+© 2024-2026 - Tous droits réservés, KHLIFI HOUCEM.
