@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TP-04 : Stack Application Simple</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/style.css">
+    <script src="../assets/main.js" defer></script>
+</head>
+<body>
+
+    <header>
+        <div class="brand"><span>&gt;_</span> Docker TPs</div>
+        <a href="../index.html" class="back-btn">⬅ Retour aux TPs</a>
+    </header>
+
+    <main class="container">
+        <div class="tp-header">
+            <h1>TP-04 : Architecture Web Multi-Conteneurs Manuelle</h1>
+            <div class="tp-meta">
+                <span class="badge intermediate">Intermédiaire</span>
+                <span>⏱ Durée estimée : 45 min</span>
+            </div>
+        </div>
+
+        <div class="tp-content">
+            <h2>🎯 Objectifs d'apprentissage</h2>
+            <ul>
+                <li>Comprendre la nécessité d'orchestrer soi-même une architecture complète à plusieurs briques (Base de données + Backend).</li>
+                <li>Passer de multiples arguments, notamment des variables d'environnement.</li>
+                <li>Comprendre l'extrême complexité asynchrone qui justifie par ailleurs le besoin de Docker Compose (abordé ultérieurement).</li>
+            </ul>
+
+            <!-- Steps -->
+            <h2>📝 Étape par étape</h2>
+
+            <p>Notre application fournie en exemple dans <code>app/app.py</code> est un petit script Python. Elle se connecte à un serveur Redis et incrémente un compteur de visiteurs globaux.</p>
+
+            <h3>Étape 1 : Le Réseau Commun</h3>
+            <p>Créons le réseau pour que DB et Application Web s'écoutent :</p>
+<pre><code>docker network create app-globale-net</code></pre>
+
+            <h3>Étape 2 : Démarrage du Cache Redis</h3>
+            <p>On demande à Docker de télécharger l'image de cache ultra-rapide Redis, et on attache ce conteneur à notre réseau.</p>
+<pre><code>docker run -d --name serveur-redis --network app-globale-net redis:alpine</code></pre>
+            <p><em>Remarque majeure :</em> Pas de directive `-p` ici. On n'expose jamais les bases de données aux hackers (réseau physique), le Backend viendra parler localement à sa base via le réseau isolé !</p>
+
+            <h3>Étape 3 : Compilation de l'image de l'application</b></h3>
+            <p>Assurez-vous qu'un Dockerfile est bien présent à la racine de <code>tp-04-simple-webapp</code>, puis compilez :</p>
+<pre><code>docker build -t compteur-visite:v1 .</code></pre>
+
+            <h3>Étape 4 : Lancement du Backend et Configuration d'environnement</h3>
+            <p>Le backend Python ne sait *pas* comment s'appelle la base Redis, le code dit par défaut `localhost`, mais dans Docker, localhost c'est le conteneur python lui-même... 
+            Nous allons donc manipuler ce paramètre via le drapeau optionnel d'environnement : <code>-e</code></p>
+<pre><code>docker run -d --name web-api \
+    -p 8080:5000 \
+    --network app-globale-net \
+    -e REDIS_HOST=serveur-redis \
+    compteur-visite:v1</code></pre>
+            <p>Le Backend va tenter de résoudre le domaine <code>serveur-redis</code>. Comme par enchantement, le DNS de Docker lui fournira l'IP interne du cache.</p>
+
+            <h3>Étape 5 : Test final</h3>
+            <p>Allez sur <code>http://localhost:8080</code> et bombardez la page de "F5".</p>
+            <p>Une base Redis stocke toutes les valeurs sous forme de chaîne de caractères ultra rapide.</p>
+            <p>Si tout fonctionne, vous devriez voir le compteur de hits de l'API s'incrémenter globalement.</p>
+
+            <h3>Étape 6 : Nettoyage</h3>
+<pre><code>docker stop web-api serveur-redis
+docker rm web-api serveur-redis
+docker network rm app-globale-net</code></pre>
+
+            <h2>❓ Questions de synthèse</h2>
+            <ol>
+                <li>Imaginons une architecture classique à 10 micro-services (Auth, Frontend, Data Processing, etc). La commande <code>docker run</code> manuelle avec arguments est-elle facilement viable avec une petite équipe de dix développeurs essayant d'installer ceci la toute première fois ?</li>
+                <li>Si notre application devait redémarrer suite à une mise à jour Python, que deviendrait la valeur d'incrément des "visites" sur Redis ? (HINT : a-t-on monté un volume nommé dans la base redis lors du TP ?)</li>
+            </ol>
+
+        </div>
+    </main>
+
+    <footer>
+        <p>Formation DevOps par la pratique — Docker & Docker Compose</p>
+    </footer>
+
+</body>
+</html>

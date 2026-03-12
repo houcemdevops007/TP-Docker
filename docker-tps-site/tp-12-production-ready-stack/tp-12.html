@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TP-12 : Déploiement "Ready to Prod" de la Stack Idéale</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/style.css">
+    <script src="../assets/main.js" defer></script>
+</head>
+<body>
+
+    <header>
+        <div class="brand"><span>&gt;_</span> Docker TPs</div>
+        <a href="../index.html" class="back-btn">⬅ Retour aux TPs</a>
+    </header>
+
+    <main class="container">
+        <div class="tp-header">
+            <h1>TP-12 : La Stack d'Expert "Production-Ready" Intégrale</h1>
+            <div class="tp-meta">
+                <span class="badge expert">Expert</span>
+                <span>⏱ Durée estimée : 60 min</span>
+            </div>
+        </div>
+
+        <div class="tp-content">
+            <h2>🎯 Objectifs d'apprentissage</h2>
+            <ul>
+                <li>Orchestrer l'ensemble des concepts vu dans un point d'orgue de qualité totale.</li>
+                <li>Lire et assimiler la puissance prodigieuse du <strong>Multi-Stage Build</strong> pour occulter les dépendances compilées avant livraison de l'image minimale (Frontend Alpine -> Nginx Image).</li>
+                <li>Manipuler un conteneur Proxy inverse de type Engine x (Nginx) sans jamais percer les sécurités DB / Backend vers internet public.</li>
+            </ul>
+
+            <!-- Steps -->
+            <h2>📝 Étape par étape</h2>
+
+            <p>L'apothéose DevOps, ou une tentative de rapprochment extrême du standard du marché : <br>
+            Frontend public -> Firewall(Proxy IN) -> Backend(Non Root) -> Database(Cache+SQL) .</p>
+
+            <h3>Étape 1 : Audit Global visuel de 10 Minutes (Tâches du Senior)</h3>
+            <p>Fouillez votre répertoire courant et validez chaque composante ! L'Outil est robuste :</p>
+            <ul>
+                <li><strong>frontend/Dockerfile</strong> : Contemplez le "AS builder". L'mage pèse très lourd, elle va compiler (imaginons Node ou Webpack), et dans une 2nd temps (`FROM Nginx`) un autre disque propre copiera uniquement le build résultant via <code>--from=builder</code>. C'est l'essence du cloud moderne sans surpoid de faille de sécurité.</li>
+                <li><strong>backend/Dockerfile</strong> : Le linter n'a rien à dire. Compilation par étapes. Création d'un groupe applicatif pour l'exécution d'interface.</li>
+                <li><strong>config/nginx.conf</strong> : C'est ce fichier vital mis en route par le Conteneur Proxy qui distribue vers `/` pour la page html Frontend, mais route sur l'URL de base réseau-privée Docker nommé `/api` la requête du navigateur client pour contacter Postgres Indirectement.</li>
+            </ul>
+
+            <h3>Étape 2 : Simulation CI Automatisée Intransigeante</h3>
+            <p>Chez les pro, pas de "docker compose UP aveugle". Le CI Pipeline de GitLab passera tout ça à la moulinette scanner Hadolint Linter + Scanner de Sécurité Trivy du socle O.S image Alpine, etc...</p>
+            <p>Testons le script Bash préparé par notre lead Dev : </p>
+<pre><code>chmod +x scripts/ci-pipeline.sh
+./scripts/ci-pipeline.sh</code></pre>
+            <p>Résultat : Il vous lintera sans pitié les deux images, bâtira localement la fondation intermédiaire, puis lancera TRIVY Aquasec pour garantir la version zéro vulnérabilité critique. Tout est VERRE DE GAUCHE : Déploiement Autorisé.</p>
+
+            <h3>Étape 3 : "Go Live !" Déploiement de Stack</h3>
+<pre><code>docker compose up -d</code></pre>
+            <p>Dégustez au visuel les "Depends_on / Conditions_healthy" fonctionner par rebond et effet domino asynchrone ! La base initialise son disque persistant, validé. Python Backend API valide sa boucle 10s sur db... Puis ENFIN Le Proxy Web frontal nginx, rassuré d'une arborescence complète derrière lui, donne le feu-vert extérieur. </p>
+
+            <h3>Étape 4 : Test Réel de charge Proxy Extérieure</h3>
+            <p>Seul et unique trou de douane dans l'infrastructure : le port 80 de proxy.</p>
+            <ul>
+                <li><strong>Navigateur Local (Front) :</strong> `http://localhost/` (Route NGINX vers votre index de web)</li>
+                <li><strong>Interface JSON (Back) :</strong> `http://localhost/api/count` (Route NGINX vers le Flask qui incrémente sans exposer la bdd !)</li>
+            </ul>
+
+            <h3>Étape 5 : L'Ultime Clap de Fin 🎉</h3>
+<pre><code>docker compose down -v</code></pre>
+
+            <h2>🚀 Félicitations d'Achevement Extrême </h2>
+            <p>Vous êtes passés des tristes `Docker Run` enchaînés à tâtons en ligne bash, aux puissants fichiers déclaratifs `Docker Compose` blindés de healthchecks, de réseaux clos sans IPv4 explicites, avec une propreté logicielle prouvable via Linter / Scanner intégration continue et des compilations Multi-Phase à micro-poids d'exploitation ! </p>
+
+        </div>
+    </main>
+
+    <footer>
+        <p>Formation DevOps par la pratique — Docker & Docker Compose</p>
+    </footer>
+
+</body>
+</html>

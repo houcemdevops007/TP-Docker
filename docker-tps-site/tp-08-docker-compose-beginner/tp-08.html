@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TP-08 : Introduction Docker Compose</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/style.css">
+    <script src="../assets/main.js" defer></script>
+</head>
+<body>
+
+    <header>
+        <div class="brand"><span>&gt;_</span> Docker TPs</div>
+        <a href="../index.html" class="back-btn">⬅ Retour aux TPs</a>
+    </header>
+
+    <main class="container">
+        <div class="tp-header">
+            <h1>TP-08 : Débuter avec Docker Compose</h1>
+            <div class="tp-meta">
+                <span class="badge beginner">Débutant</span>
+                <span>⏱ Durée estimée : 30 min</span>
+            </div>
+        </div>
+
+        <div class="tp-content">
+            <h2>🎯 Objectifs d'apprentissage</h2>
+            <ul>
+                <li>Remplacer l'enchaînement fastidieux des <code>docker run</code> par un unique fichier déclaratif YAML.</li>
+                <li>Définir une "Stack" multi-conteneurs basique (serveur web + file de cache redis).</li>
+                <li>Utiliser un fichier <code>.env</code> externe pour déporter la configuration dynamique.</li>
+            </ul>
+
+            <!-- Steps -->
+            <h2>📝 Étape par étape</h2>
+
+            <p>Nous allons recréer le scénario du TP-04, mais cette fois-ci géré avec l'orchestrateur local Docker Compose.</p>
+
+            <h3>Étape 1 : Lecture Pédagogique du Fichier</h3>
+            <p>Ouvrez et contemplez l'élégance de <code>docker-compose.yml</code> et de son acolyte caché <code>.env</code>.</p>
+            <ul>
+                <li><strong>Services</strong> : Deux briques, `web` (votre API) et `redis`. Compose sait que l'un a besoin de l'autre grâce à <code>depends_on</code>.</li>
+                <li><strong>Réseau Absolu</strong> : Avez-vous vu une commande de création de réseau ? Non ! Compose génère automatiquement un réseau de pile (Stack Network) privé à l'instant où on le lance, et y connecte tous vos services implicitement.</li>
+                <li><strong>Variables secrètes/config</strong> : Le port exposé de l'API est tiré automatiquement de la variable <code>WEB_PORT</code> lue dans le fichier <code>.env</code> ! Oubliez la gestion manuelle.</li>
+            </ul>
+
+            <h3>Étape 2 : Un Seul Anneau Pour Les Gouverner Tous</h3>
+            <p>Lancez purement et simplement toute l'architecture en arrière-plan depuis le dossier du TP :</p>
+<pre><code>docker compose up -d</code></pre>
+
+            <p>Vérifiez le sous-groupe :</p>
+<pre><code>docker compose ps</code></pre>
+
+            <h3>Étape 3 : Suivi d'Opérations Unifiées</h3>
+            <p>Plus besoin de taper chaque ID de conteneur, demandez les journaux unifiés en streaming :</p>
+<pre><code>docker compose logs -f</code></pre>
+            <p>Et seulement pour la base de données :</p>
+<pre><code>docker compose logs redis</code></pre>
+
+            <h3>Étape 4 : Destruction Systémique</h3>
+            <p>Le développeur arrête de travailler : suppression propre en un clic :</p>
+<pre><code>docker compose down</code></pre>
+            <p>Tous les conteneurs sont stoppés, supprimés, et l'immense réseau par défaut est nettoyé silencieusement.</p>
+
+        </div>
+    </main>
+
+    <footer>
+        <p>Formation DevOps par la pratique — Docker & Docker Compose</p>
+    </footer>
+
+</body>
+</html>

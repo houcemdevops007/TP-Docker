@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TP-10 : Sûreté et Healthchecks avancés</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/style.css">
+    <script src="../assets/main.js" defer></script>
+</head>
+<body>
+
+    <header>
+        <div class="brand"><span>&gt;_</span> Docker TPs</div>
+        <a href="../index.html" class="back-btn">⬅ Retour aux TPs</a>
+    </header>
+
+    <main class="container">
+        <div class="tp-header">
+            <h1>TP-10 : Sécurisation, Limitations et Healthchecks Logiques</h1>
+            <div class="tp-meta">
+                <span class="badge advanced">Avancé</span>
+                <span>⏱ Durée estimée : 45 min</span>
+            </div>
+        </div>
+
+        <div class="tp-content">
+            <h2>🎯 Objectifs d'apprentissage</h2>
+            <ul>
+                <li>Définir et utiliser intelligemment les Sondes de Vie (<code>Healthchecks</code>).</li>
+                <li>Verouiller conditionnellement le démarrage du backend : on démarre <strong>UNIQUEMENT</strong> quand Postgresql est prête et réceptive, et non simplement "Démarrée".</li>
+                <li>Contraindre physiquement le CPU et la RAM (OOM Killing).</li>
+            </ul>
+
+            <!-- Steps -->
+            <h2>📝 Étape par étape</h2>
+
+            <h3>Étape 1 : Analyser le danger du "Fake Running"</h3>
+            <p>Ouvrez `docker-compose.yml`. Un container lourd (ex: ElasticSearch, MySQL) affiche l'état "Running" dès que son conteneur `docker run` est passé, mais le boot de traitement base de données en interne au processus peut durer 7 à 10 secondes. <br>
+            Si l'API démarre en même temps et que son driver ne gère pas l'attente... Crash serveur d'API dés la seconde 1 !</p>
+            <p>C'est ici qu'interviennent les fameux `healthcheck:` et la condition d'attente <code>condition: service_healthy</code>.</p>
+
+            <h3>Étape 2 : Lancer et Monitorer les Etats</h3>
+            <p>Démarrez la suite :</p>
+<pre><code>docker compose up -d
+docker compose ps</code></pre>
+
+            <p>Re-tapez les PS. Observez l'état du Postgres, il affiche très brièvement <code>(health: starting)</code> puis bascule en <code>(healthy)</code>. Le conteneur "api" (simulé par Alpine pour s'endormir à l'infini ici) ne démarre QUE passé ce délai sain !</p>
+
+            <h3>Étape 3 : Le Plafond De Verre (Cgroups)</h3>
+            <p>La limite mémoire de JVM ou de Node est incontournable.</p>
+<pre><code>docker stats</code></pre>
+            <p>Validez vos limites : vous devriez voir la ligne "api" bridée de force (MEM LIMIT) à 128 MB maximum. Si elle dépassait (memory leak script), Docker la fusillerait via un OOM-Kill instantané (Restart par défaut) au lieu de laisser crasher toute la machine hôte linux serveur principal.</p>
+
+            <h3>Étape 4 : Démonstration de la condition de garde</h3>
+            <p>Éditez le fichier YAML local pour simuler une panne SQL grave. Remplacer `-U postgres` par un compte qui n'existe pas : `-U COMPTE_INVALID_CRASH` de la ligne de test du composant DB.</p>
+            
+            <p>Relancez pour observer le désastre sous contrôle absolu :</p>
+<pre><code>docker compose down
+docker compose up -d
+docker compose ps</code></pre>
+            <p>La DB sera incapable de passer son tir de check de vie, elle s'affichera <code>(unhealthy)</code>. L'API d'entreprise sera complètement empêchée et bloquée en statut "Starting" par Docker pour protéger l'amorçage. Incide évité.</p>
+
+
+            <h2>❓ Questions de validation</h2>
+            <ol>
+                <li>Quelle vulnérabilité un système complexe Docker composé de plus de 20 briques dépendantes comporterait-il si l'on ne déclarait aucune condition <code>dependencies: service_healthy</code> ?</li>
+            </ol>
+
+        </div>
+    </main>
+
+    <footer>
+        <p>Formation DevOps par la pratique — Docker & Docker Compose</p>
+    </footer>
+
+</body>
+</html>

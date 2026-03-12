@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TP-01 : Les Bases de Docker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/style.css">
+    <script src="../assets/main.js" defer></script>
+</head>
+<body>
+
+    <header>
+        <div class="brand"><span>&gt;_</span> Docker TPs</div>
+        <a href="../index.html" class="back-btn">⬅ Retour aux TPs</a>
+    </header>
+
+    <main class="container">
+        <div class="tp-header">
+            <h1>TP-01 : Les Bases de Docker</h1>
+            <div class="tp-meta">
+                <span class="badge beginner">Débutant</span>
+                <span>⏱ Durée estimée : 30 min</span>
+            </div>
+        </div>
+
+        <div class="tp-content">
+            <h2>🎯 Objectifs d'apprentissage</h2>
+            <ul>
+                <li>Vérifier l'installation de Docker sur votre machine.</li>
+                <li>Comprendre la différence fondamentale entre une image et un conteneur.</li>
+                <li>Télécharger des images depuis le Docker Hub.</li>
+                <li>Lancer, arrêter et lister des conteneurs.</li>
+                <li>Inspecter les journaux (logs) et exécuter des commandes à l'intérieur de conteneurs actifs.</li>
+            </ul>
+
+            <h2>🛠 Prérequis</h2>
+            <ul>
+                <li>Docker Engine installé et fonctionnel (Linux ou WSL2 sous Windows).</li>
+                <li>Connaissances très basiques d'un terminal Linux.</li>
+            </ul>
+
+            <!-- Steps -->
+            <h2>📝 Étape par étape</h2>
+
+            <h3>Étape 1 : Vérifier l'installation</h3>
+            <p>Commençons par nous assurer que le client Docker est bien installé et que le service (daemon) répond correctement.</p>
+<pre><code>docker version
+docker info</code></pre>
+            <p><strong>Explication :</strong> <code>docker version</code> affiche la version du client et du serveur. <code>docker info</code> donne des détails système globaux comme l'espace de stockage et le nombre de conteneurs existants.</p>
+
+            <h3>Étape 2 : Télécharger votre première image</h3>
+            <p>Une <strong>image</strong> est un modèle en lecture seule utilisé pour créer des conteneurs. Nous allons "tirer" (télécharger) la minuscule image Linux <code>alpine</code>.</p>
+<pre><code>docker pull alpine:latest
+docker images</code></pre>
+            <p><strong>Explication :</strong> <code>docker pull</code> va chercher l'image sur le registre par défaut (Docker Hub). <code>docker images</code> liste toutes les images stockées localement sur votre disque.</p>
+
+            <h3>Étape 3 : Lancer votre premier conteneur</h3>
+            <p>Un <strong>conteneur</strong> est une instance en cours d'exécution d'une image. Lançons un conteneur <code>alpine</code> tout en ouvrant un shell (invite de commande) à l'intérieur.</p>
+<pre><code>docker run -it alpine sh</code></pre>
+            <p>Une fois à l'intérieur du conteneur, tapez ces commandes :</p>
+<pre><code>cat /etc/os-release
+echo "Bonjour depuis Docker" > message.txt
+exit</code></pre>
+            <p><strong>Explication :</strong> Les options <code>-i</code> (interactif) et <code>-t</code> (pseudo-TTY) vous lient au terminal du conteneur. Lorsque vous tapez <code>exit</code>, le processus principal s'arrête, ce qui <strong>arrête automatiquement</strong> le conteneur complet.</p>
+
+            <h3>Étape 4 : Les conteneurs en arrière-plan (Détachés)</h3>
+            <p>Souvent, nous voulons qu'un serveur web tourne en tâche de fond. Essayons avec le serveur web <code>nginx</code>.</p>
+<pre><code>docker run -d --name mon-serveur-web -p 8080:80 nginx:alpine</code></pre>
+            <p><strong>Explication :</strong></p>
+            <ul>
+                <li><code>-d</code> (detached) : exécute le conteneur en arrière-plan.</li>
+                <li><code>--name</code> : donne un nom personnalisé lisible (sinon Docker en invente un).</li>
+                <li><code>-p 8080:80</code> : très important ! Cela redirige le port 8080 de votre machine physique vers le port 80 (par défaut d'nginx) à l'intérieur du conteneur.</li>
+            </ul>
+            <p>Testez le serveur web via le navigateur à <code>http://localhost:8080</code> ou via le terminal :</p>
+<pre><code>curl http://localhost:8080</code></pre>
+
+            <h3>Étape 5 : Gestion au quotidien</h3>
+            <p>Lister les conteneurs actuellement en cours d'exécution :</p>
+<pre><code>docker ps</code></pre>
+            <p>Pour voir <strong>tous</strong> les conteneurs (même ceux qui sont arrêtés), utilisez <code>docker ps -a</code>.</p>
+
+            <p>Voir les logs générés par le serveur web lorsqu'il a reçu votre requête :</p>
+<pre><code>docker logs mon-serveur-web</code></pre>
+
+            <p>Exécuter une nouvelle commande (ex: ouvrir un shell) dans un conteneur qui tourne *déjà* (contrairement à run) :</p>
+<pre><code>docker exec -it mon-serveur-web sh</code></pre>
+            <p>Tapez <code>ls /usr/share/nginx/html</code> puis <code>exit</code>.</p>
+
+            <h3>Étape 6 : Nettoyage</h3>
+            <p>Il est temps d'arrêter et de supprimer le conteneur.</p>
+<pre><code>docker stop mon-serveur-web
+docker rm mon-serveur-web
+docker ps -a</code></pre>
+
+            <h2>❓ Questions de validation</h2>
+            <ol>
+                <li>Quelle est la différence fondamentale entre une image et un conteneur ?</li>
+                <li>Que se passe-t-il pour un conteneur quand son processus principal (PID 1) se termine ?</li>
+                <li>Quel argument permet de rediriger un port de votre ordinateur physique vers le conteneur ?</li>
+            </ol>
+
+            <h2>🚀 Pour aller plus loin...</h2>
+            <p>Essayez de lancer un conteneur avec l'image <code>busybox</code> en ajoutant l'argument <code>--rm</code> (ex: <code>docker run --rm busybox echo "Salut"</code>). Regardez le résultat de <code>docker ps -a</code> ensuite. À quoi sert cet argument selon vous ?</p>
+
+        </div>
+    </main>
+
+    <footer>
+        <p>Formation DevOps par la pratique — Docker & Docker Compose</p>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TP-02 : Construire ses premières images</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/style.css">
+    <script src="../assets/main.js" defer></script>
+</head>
+<body>
+
+    <header>
+        <div class="brand"><span>&gt;_</span> Docker TPs</div>
+        <a href="../index.html" class="back-btn">⬅ Retour aux TPs</a>
+    </header>
+
+    <main class="container">
+        <div class="tp-header">
+            <h1>TP-02 : Construire ses premières images (Dockerfile)</h1>
+            <div class="tp-meta">
+                <span class="badge beginner">Débutant</span>
+                <span>⏱ Durée estimée : 45 min</span>
+            </div>
+        </div>
+
+        <div class="tp-content">
+            <h2>🎯 Objectifs d'apprentissage</h2>
+            <ul>
+                <li>Maîtriser les instructions de base d'un Dockerfile : <code>FROM</code>, <code>RUN</code>, <code>COPY</code>, <code>CMD</code>, <code>EXPOSE</code>.</li>
+                <li>Fabriquer une image Docker personnalisée à partir du code source d'une application.</li>
+                <li>Appliquer un tag personnalisé (<code>-t</code>) à l'image et l'exécuter.</li>
+            </ul>
+
+            <h2>🛠 Prérequis</h2>
+            <ul>
+                <li>Avoir terminé le TP-01 avec succès.</li>
+            </ul>
+
+            <!-- Steps -->
+            <h2>📝 Étape par étape</h2>
+
+            <p>Pour cet exercice, une petite application web codée en Python (Flask) est fournie dans le dossier <code>app/</code> à côté du README.</p>
+
+            <h3>Étape 1 : Comprendre l'application source</h3>
+            <p>Ouvrez et regardez le contenu de <code>app/app.py</code> et de <code>app/requirements.txt</code> (le fichier qui liste les dépendances python nécessaires). Cette application web doit écouter sur le port <strong>5000</strong>.</p>
+
+            <h3>Étape 2 : Rédiger le Dockerfile</h3>
+            <p>A la racine du dossier du TP-02 (là où se trouve le dossier <code>app/</code>), créez un fichier nommé exactement <code>Dockerfile</code> (sans aucune extension). Remplissez le avec le contenu suivant :</p>
+
+<pre><code># 1. On part d'une image officielle Python (version allégée "slim")
+FROM python:3.9-slim
+
+# 2. On définit le dossier de travail PAR DÉFAUT à l'intérieur du conteneur
+WORKDIR /usr/src/app
+
+# 3. OPTIMISATION : On copie SEULEMENT le fichier des dépendances dans un premier temps
+COPY app/requirements.txt ./
+
+# 4. On installe les librairies Python demandées
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 5. On copie le reste du code de notre projet
+COPY app/ ./
+
+# 6. Documentation : On indique que ce conteneur a vocation à écouter sur le port 5000
+EXPOSE 5000
+
+# 7. La commande exécutée par défaut au démarrage du conteneur
+CMD ["python", "app.py"]</code></pre>
+            
+            <p><strong>Explication cruciale :</strong> Pourquoi on ne copie pas tout le dossier <code>app/</code> d'un seul coup (ligne 3) ?  
+            Parce que Docker met en cache chaque ligne. L'installation des librairies Python (<code>pip install</code>) peut être longue. Si on copie <code>app/app.py</code> (qui change souvent) <strong>avant</strong> l'installation des dépendances, Docker referait l'installation de zéro à chaque petite modification de code !</p>
+
+            <h3>Étape 3 : Compiler (Build) l'image</h3>
+            <p>Maintenant, on demande à Docker de lire le fichier et de générer l'image :</p>
+<pre><code>docker build -t hello-devops:v1 .</code></pre>
+            <p><strong>Astuce :</strong> Le point <code>.</code> à la toute fin n'est pas une faute de frappe, il indique à Docker que le dossier contenant le projet (le "contexte") est le dossier actuel.</p>
+
+            <p>Vérifiez que l'image existe bien :</p>
+<pre><code>docker images | grep hello-devops</code></pre>
+
+            <h3>Étape 4 : Lancer le conteneur maison</h3>
+            <p>C'est le moment de tester notre création en liant notre port local 8080 vers le port 5000 de l'application :</p>
+<pre><code>docker run -d --name mon-app-python -p 8080:5000 hello-devops:v1</code></pre>
+
+            <p>Vérifiez que le serveur répond correctement :</p>
+<pre><code>curl http://localhost:8080</code></pre>
+            <p>Vous devriez voir un résultat JSON : <code>{"message":"Hello DevOps ver. 1.0"}</code>.</p>
+
+            <h3>Étape 5 : Modification de code et re-compilation ultra-rapide</h3>
+            <p>Modifiez le fichier <code>app/app.py</code> sur votre machine pour renvoyer le texte : "Hello DevOps (V2)".</p>
+            <p>Relancez ensuite la compilation en changeant la version textuelle du tag :</p>
+<pre><code>docker build -t hello-devops:v2 .</code></pre>
+            <p>Avez-vous remarqué à quel point l'étape d'installation avec <code>pip</code> a été passée instantanément ? C'est le fameux <strong>Cache Docker</strong> !</p>
+
+            <h3>Étape 6 : Nettoyage</h3>
+<pre><code>docker stop mon-app-python
+docker rm mon-app-python</code></pre>
+
+            <h2>❓ Questions de validation</h2>
+            <ol>
+                <li>À quoi sert l'instruction <code>WORKDIR</code> dans le Dockerfile ?</li>
+                <li>Pourquoi est-il indispensable de séparer la copie du <code>requirements.txt</code> et la copie de <code>app.py</code> ?</li>
+                <li>Que signifie le <code>.</code> (point) à la fin de la commande <code>docker build -t nom:v1 .</code> ?</li>
+            </ol>
+
+            <h2>🚀 Pour aller plus loin...</h2>
+            <p>Ouvrez un dossier vide et créez votre propre Dockerfile qui utilise l'image <code>nginx:alpine</code>. Écrivez un fichier <code>index.html</code> simple en local, et utilisez la commande <code>COPY</code> pour l'injecter dans <code>/usr/share/nginx/html/index.html</code>. Compilez et exécutez votre serveur web 100% statique personnalisé !</p>
+
+        </div>
+    </main>
+
+    <footer>
+        <p>Formation DevOps par la pratique — Docker & Docker Compose</p>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TP-06 : Intégration d'Hadolint</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/style.css">
+    <script src="../assets/main.js" defer></script>
+</head>
+<body>
+
+    <header>
+        <div class="brand"><span>&gt;_</span> Docker TPs</div>
+        <a href="../index.html" class="back-btn">⬅ Retour aux TPs</a>
+    </header>
+
+    <main class="container">
+        <div class="tp-header">
+            <h1>TP-06 : Automatisation Check-In (CI) via Script Bash</h1>
+            <div class="tp-meta">
+                <span class="badge intermediate">Intermédiaire</span>
+                <span>⏱ Durée estimée : 20 min</span>
+            </div>
+        </div>
+
+        <div class="tp-content">
+            <h2>🎯 Objectifs d'apprentissage</h2>
+            <ul>
+                <li>Savoir déclencher l'échec ou la réussite d'un pipeline complet en traitant le code erreur (`Exit 1`).</li>
+                <li>Scripter la vérification universelle de tous les Dockerfiles du répertoire.</li>
+            </ul>
+
+            <!-- Steps -->
+            <h2>📝 Étape par étape</h2>
+
+            <h3>Étape 1 : Rôle central du Pipeline Automatise</h3>
+            <p>En entreprise moderne avec GitLab, CircleCI ou GitHub Actions, plus personne ne tape <code>hadolint Dockerfile</code> un par un. Un système valide à chaque Push si votre collègue n'a rien cassé.</p>
+
+            <p>Regardez <code>ci-hadolint.sh</code>. Il liste tous les fichiers contenant "*Dockerfile*", tente de lancer la version locale de hadolint et, cas échéant, il lance automatiquement la version par conteneur jetable.</p>
+
+            <h3>Étape 2 : Simulation locale</h3>
+            <p>Rendez-le exécutable (ce qui reste nécessaire à son passage côté exécuteur distant !).</p>
+<pre><code>chmod +x ci-hadolint.sh
+./ci-hadolint.sh</code></pre>
+
+            <p>Le Dockerfile propre qui se trouve localisé dans ce TP (une toute petite base nginx alpine avec création `appgroup` et `appuser` natif), passera ce check au vert absolu ! (Exit Code de `0`).</p>
+
+            <h3>Étape 3 : Sabotage</h3>
+            <p>Modifiez en cassant explicitement notre <code>Dockerfile</code> du répertoire : rajoutez-y une directive <code>FROM node:latest</code>.</p>
+            
+            <p>Ré-exécutez le script :</p>
+<pre><code>./ci-hadolint.sh</code></pre>
+            <p>Il vous interceptera ("Linting... DL3007") et plantera directement en sortant sans exécuter la ligne finale de bravoure !</p>
+
+            <h3>Étape 4 : Démonstration sur GitHub Action et GitLab</h3>
+            <p>Pour culture DevOps complète, comment cela se passe-t-il sur GitLab CI par exemple ? Très simple : </p>
+<pre><code>lint_code_docker:
+  stage: test_statique
+  image: hadolint/hadolint:latest-debian
+  script:
+    - hadolint Dockerfile</code></pre>
+
+        </div>
+    </main>
+
+    <footer>
+        <p>Formation DevOps par la pratique — Docker & Docker Compose</p>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TP-11 : Observateurs et Métriques HTTP</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/style.css">
+    <script src="../assets/main.js" defer></script>
+</head>
+<body>
+
+    <header>
+        <div class="brand"><span>&gt;_</span> Docker TPs</div>
+        <a href="../index.html" class="back-btn">⬅ Retour aux TPs</a>
+    </header>
+
+    <main class="container">
+        <div class="tp-header">
+            <h1>TP-11 : Drivers de Logs Limitatifs et Sonde HTTP Applicative</h1>
+            <div class="tp-meta">
+                <span class="badge advanced">Avancé</span>
+                <span>⏱ Durée estimée : 30 min</span>
+            </div>
+        </div>
+
+        <div class="tp-content">
+            <h2>🎯 Objectifs d'apprentissage</h2>
+            <ul>
+                <li>Empêcher l'asphyxie redoutée du "Disk Full" sur le serveur Docker de production (Rotation de logs locaux intégrée).</li>
+                <li>Demander au client HTTP WGET (Curl proxyfié) minimal d'interroger logiciellement le statut en interne au code.</li>
+            </ul>
+
+            <!-- Steps -->
+            <h2>📝 Étape par étape</h2>
+
+            <h3>Étape 1 : Le Cauchemar du fichier de LOG Infini</h3>
+            <p>Ouvrez le fichier local <code>docker-compose.yml</code>. Par instinct un codeur laisse l'app loguer par nature, mais Docker agglomère ça indéfiniment. Regardez la partie <code>logging: driver: json-file</code>.</p>
+            <p>Ce bloc salvateur écrète magiquement les journaux locaux passés les 3 roulements de 10 MegaOctets ! (30 Mo absolus conservés maximum sans polluer l'infrastructure du cloud).</p>
+
+            <h3>Étape 2 : Coder un faux chargement Python lent</h3>
+            <p>Dans <code>app/app.py</code>, constatez la petite tricherie ajoutée sous la forme de l'endpoint d'API web `<code>/health</code>`. Le code ne répondra délibérement avec l'OK HTTPS que passé 10 secondes pleines (afin de forcer un temps de chauffe applicatif visible humainement simulé). </p>
+
+            <h3>Étape 3 : Build & Observation du temps de chauffe asynchrone</h3>
+<pre><code>docker compose up -d --build
+watch -n 1 "docker compose ps"</code></pre>
+            <p>(Pour quitter watch : tapez "Crtl + C").</p>
+
+            <p>Durant ses 10 premières secondes pénibles, vos requêtes <code>wget</code> automatiques depuis l'intérieur échouent. Le conteneur reste grisé `(health: starting)`, puis il clignotte sur la consigne Verte Libératrice !</p>
+
+            <h3>Étape 4 : Log Tagging Central</h3>
+<pre><code>docker compose logs -f api</code></pre>
+            <p>Compose marque explicitement la ligne lue et l'identifiant pour la centralisation simplifiée. Testez de bombarder en local via `curl http://localhost:8080/health` pendant que votre terminal 1 regarde tourner infiniment les logs, générés à la réactivité micro-secondes.</p>
+
+        </div>
+    </main>
+
+    <footer>
+        <p>Formation DevOps par la pratique — Docker & Docker Compose</p>
+    </footer>
+
+</body>
+</html>

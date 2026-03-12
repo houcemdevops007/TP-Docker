@@ -1,0 +1,9 @@
+FROM ubuntu:latest
+
+# Bad: apt-get update and install in separate layers without cleaning cache
+RUN apt-get update
+RUN apt-get install -y curl
+RUN apt-get install -y python3
+
+# Bad: Running as root
+CMD ["python3", "-m", "http.server"]

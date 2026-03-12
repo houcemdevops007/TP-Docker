@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TP-05 : Bonnes pratiques et introduction à Hadolint</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/style.css">
+    <script src="../assets/main.js" defer></script>
+</head>
+<body>
+
+    <header>
+        <div class="brand"><span>&gt;_</span> Docker TPs</div>
+        <a href="../index.html" class="back-btn">⬅ Retour aux TPs</a>
+    </header>
+
+    <main class="container">
+        <div class="tp-header">
+            <h1>TP-05 : Bonnes Pratiques Dockerfile avec Hadolint</h1>
+            <div class="tp-meta">
+                <span class="badge intermediate">Intermédiaire</span>
+                <span>⏱ Durée estimée : 30 min</span>
+            </div>
+        </div>
+
+        <div class="tp-content">
+            <h2>🎯 Objectifs d'apprentissage</h2>
+            <ul>
+                <li>Identifier les "anti-patterns" (mauvaises pratiques classiques) dans l'écriture d'un Dockerfile.</li>
+                <li>Utiliser le linter de référence <code>hadolint</code> pour scanner votre fichier localement.</li>
+                <li>Appliquer les correctifs pour obtenir une image légère, dé-cachée proprement et non gérée par le super-utilisateur "root".</li>
+            </ul>
+
+            <!-- Steps -->
+            <h2>📝 Étape par étape</h2>
+
+            <p>Deux fichiers sont fournis à la racine du TP-05 : <code>Dockerfile.bad</code> et un <code>Dockerfile.good</code> corrigé.</p>
+
+            <h3>Étape 1 : Analyser les aberrations de 'Dockerfile.bad'</h3>
+            <p>Ouvrez le premier fichier. Les pires horreurs possibles s'y trouvent :</p>
+            <ul>
+                <li>Utilisation du lourd et dangereux tag <code>ubuntu:latest</code>. (L'OS passera en version suivante dès publication d'Ubuntu d'une nouvelle sous-version ! L'image finale casserait les dépendances Python du jour au lendemain).</li>
+                <li>Multiplication intempestive de la directive <code>RUN</code> (<code>apt-get update</code> tourne dans son coin, stocke du fichier temporaire sur un layer complet de l'historique et <code>apt-get install</code> recrée d'autres layers).</li>
+                <li>Absence totale de directive <code>USER</code>. Si le hacker perçe votre process python sur le port web, il atterrira directement en ROOT sur la base hôte de l'OS partagé !</li>
+            </ul>
+
+            <h3>Étape 2 : Analyser l'échec avec Hadolint</h3>
+            <p>Si vous avez Hadolint localement :</p>
+<pre><code>hadolint Dockerfile.bad</code></pre>
+
+            <p>Sinon, un conteneur d'Hadolint est utilisable à la volée !</p>
+<pre><code>docker run --rm -i hadolint/hadolint &lt; Dockerfile.bad</code></pre>
+
+            <p>Hadolint vous hurlera les recommandations suivantes liées aux DL (Docker Lints) :</p>
+            <ul>
+                <li><strong>DL3007</strong>: L'usage exclusif du tag ":latest" est proscrit. Préferez forcer "ubuntu:20.04" par exemple.</li>
+                <li><strong>DL3008</strong>: Épingler strictement la version python3 dans les apt-get. Ex "python3=3.10.*".</li>
+                <li><strong>DL3009/15</strong>: Obligation impérative de taper <code>rm -rf /var/lib/apt/lists/*</code> en toute fin de chaîne d'installation pour limiter le poids !</li>
+                <li><strong>DL3059</strong>: Trop de RUN consécutifs, on utilise un enchaînement : `RUN apt update && apt install ...`</li>
+                <li><strong>DL3002</strong>: Toujours clore un Dockerfile non vide avec <code>USER appuser</code> par exemple.</li>
+            </ul>
+
+            <h3>Étape 3 : La version saine (Good)</h3>
+            <p>Maintenant, analysez <code>Dockerfile.good</code>. Le layer compilé contient un `RUN` unique majestueux et il ajoute la prévention `useradd`.</p>
+
+<pre><code>hadolint Dockerfile.good</code></pre>
+            <p>Alerte muette ? Fichier validé à 100%.</p>
+
+            <h3>Étape 4 : Fichier de dérogation externe</h3>
+            <p>Parfois (rarement), une exception subsiste. Lisez <code>hadolint-config.yaml</code>. On peut demander à ignorer via un simple flag :</p>
+<pre><code>hadolint --config hadolint-config.yaml Dockerfile.bad</code></pre>
+
+
+            <h2>❓ Questions de validation</h2>
+            <ol>
+                <li>Quel danger de production l'utilisation de `debian:latest` au point `FROM` présente-t-elle le vendredi soir à 18h en cas de re-build CI automatique ?</li>
+                <li>De quoi est composée la différence matérielle (poids en Megaoctets téléchargés) entre les images respectives au DL3009 ?</li>
+                <li>Quelle vulnérabilité le linter vous permet-il d'éviter si l'on ne crée pas d'utilisateur linux bas niveau ?</li>
+            </ol>
+
+        </div>
+    </main>
+
+    <footer>
+        <p>Formation DevOps par la pratique — Docker & Docker Compose</p>
+    </footer>
+
+</body>
+</html>

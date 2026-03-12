@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TP-09 : Architectures Compose Avancées</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/style.css">
+    <script src="../assets/main.js" defer></script>
+</head>
+<body>
+
+    <header>
+        <div class="brand"><span>&gt;_</span> Docker TPs</div>
+        <a href="../index.html" class="back-btn">⬅ Retour aux TPs</a>
+    </header>
+
+    <main class="container">
+        <div class="tp-header">
+            <h1>TP-09 : Volumes, Multi-Réseaux et Scalabilité</h1>
+            <div class="tp-meta">
+                <span class="badge intermediate">Intermédiaire</span>
+                <span>⏱ Durée estimée : 40 min</span>
+            </div>
+        </div>
+
+        <div class="tp-content">
+            <h2>🎯 Objectifs d'apprentissage</h2>
+            <ul>
+                <li>Isoler strictement ses conteneurs via réseaux virtuels explicitement "Front-Tier" / "Back-Tier" au sein du YAML.</li>
+                <li>Déclarer des volumes nommés persistants dans un contexte Compose.</li>
+                <li>Démontrer la scalabilité ("Mise à l'échelle") horizontale.</li>
+            </ul>
+
+            <!-- Steps -->
+            <h2>📝 Étape par étape</h2>
+
+            <h3>Étape 1 : Le YML De Séparation Physique</h3>
+            <p>Ouvrez et étudiez le <code>docker-compose.yml</code> de ce module. Nous intégrons un PostgreSQL et un gestionnaire visuel `Adminer` pour naviguer dans la base.</p>
+
+            <p>Notez la nouvelle nomenclature au premier niveau du YAML (les racines `services:`, `networks:` et `volumes:` cohabitent). C'est le bloc de déclaration initial.</p>
+
+            <h3>Étape 2 : Lancement</h3>
+<pre><code>docker compose up -d</code></pre>
+
+            <h3>Étape 3 : Persistance Implicite de Compose</h3>
+            <p>Rendez-vous sur `http://localhost:8080/`. Identifiez-vous (PostgreSQL / Serveur: db / user: postgres / pass: secretpassword). Créez vite fait une bdd `test`.</p>
+
+            <p>Détruisons l'écosystème puis relançons-le pour simuler une énorme mise à jour : </p>
+<pre><code>docker compose down
+docker compose up -d</code></pre>
+            <p>Magie ! Vos tables sont conservées. Par mesure de fiabilité, un simple `compose down` conserve le volume <code>db-data</code> intact rattaché au nom du projet !</p>
+
+            <h3>Étape 4 : Preuve d'Isolation Réseau Absolue</h3>
+            <p>Notre `db` écoute dans l'ombre sur `back-tier`. Adminer, public, connecte les mondes `front-tier` et `back-tier`.</p>
+            <p>Faisons pinger le `adminer` DEPUIS la base `db` (elles partagent un réseau interne donc tout va bien).</p>
+<pre><code>docker compose exec db ping adminer</code></pre>
+            <p>Imaginons un service 3 (ex: VueJS) branché purement sur le Front. Jamais aucune ligne de code ne pourrait deviner l'IP ou le nom de `db` car l'isolation des réseaux Docker est totale côté DNS.</p>
+
+            <h3>Étape 5 : Nettoyage Complet (Destruction des données)</h3>
+            <p>Il est temps de purger, disques SQL y compris. Remarquez le `-v` à la fin (signifiant: purgez aussi les Volumes déclarés !) :</p>
+<pre><code>docker compose down -v</code></pre>
+
+
+            <h2>❓ Questions de validation</h2>
+            <ol>
+                <li>Un développeur fait un `docker compose down` pour rentrer chez lui à 18h. Le lendemain, la donnée SQL modifiée à 17h59 sera-t-elle présente ?</li>
+                <li>Pourquoi brancher une API à un réseau frontal mais la BDD uniquement au réseau arrière ?</li>
+            </ol>
+
+        </div>
+    </main>
+
+    <footer>
+        <p>Formation DevOps par la pratique — Docker & Docker Compose</p>
+    </footer>
+
+</body>
+</html>

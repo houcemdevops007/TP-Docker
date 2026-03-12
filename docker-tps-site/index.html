@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formation Docker & Docker Compose - Hands-on Labs</title>
+    <!-- Use Inter font from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/style.css">
+    <script src="assets/main.js" defer></script>
+</head>
+<body>
+
+    <header>
+        <div class="brand"><span>&gt;_</span> Docker TPs</div>
+    </header>
+
+    <main class="container">
+        <h1>Formation DevOps par la pratique</h1>
+        <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 800px; margin-bottom: 2rem;">
+            Bienvenue dans ce parcours de formation complet sur Docker et Docker Compose. 
+            Suivez ces travaux pratiques étape par étape pour passer d'une compréhension débutante à une parfaite maîtrise en condition de production.
+        </p>
+
+        <!-- MODULE 1: Bases Docker -->
+        <h2 class="section-title">Module 1 : Les bases de Docker</h2>
+        <div class="tps-grid">
+            
+            <div class="card">
+                <div class="card-header">
+                    <span class="tp-number">TP-01</span>
+                    <span class="badge beginner">Débutant</span>
+                </div>
+                <h3 class="card-title">Les bases de Docker</h3>
+                <p class="card-desc">Introduction au CLI de Docker, téléchargement d'images et exécution de conteneurs interactifs et en arrière-plan.</p>
+                <a href="tp-01-docker-basics/tp-01.html" class="btn">Commencer</a>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="tp-number">TP-02</span>
+                    <span class="badge beginner">Débutant</span>
+                </div>
+                <h3 class="card-title">Construire ses premières images</h3>
+                <p class="card-desc">Apprenez à écrire un Dockerfile, construire vos images personnalisées multi-couches et utiliser le cache.</p>
+                <a href="tp-02-docker-images/tp-02.html" class="btn">Commencer</a>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="tp-number">TP-03</span>
+                    <span class="badge beginner">Débutant</span>
+                </div>
+                <h3 class="card-title">Volumes et Réseaux</h3>
+                <p class="card-desc">Persistance des données via les volumes nommés et les montages "bind", et communication inter-conteneurs avec les réseaux "bridge".</p>
+                <a href="tp-03-volumes-networks/tp-03.html" class="btn">Commencer</a>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="tp-number">TP-04</span>
+                    <span class="badge intermediate">Intermédiaire</span>
+                </div>
+                <h3 class="card-title">Stack simple sans Compose</h3>
+                <p class="card-desc">Déploiement manuel d'une application multi-conteneurs (Python + Redis) pour comprendre les limites des commandes Docker simples.</p>
+                <a href="tp-04-simple-webapp/tp-04.html" class="btn">Commencer</a>
+            </div>
+            
+        </div>
+
+        <!-- MODULE 2: Qualité & Sécurité -->
+        <h2 class="section-title">Module 2 : Qualité & Sécurité</h2>
+        <div class="tps-grid">
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="tp-number">TP-05</span>
+                    <span class="badge intermediate">Intermédiaire</span>
+                </div>
+                <h3 class="card-title">Bonnes Pratiques Dockerfile</h3>
+                <p class="card-desc">Identification et correction des mauvaises pratiques dans un Dockerfile. Introduction au linter Hadolint.</p>
+                <a href="tp-05-dockerfile-best-practices/tp-05.html" class="btn">Commencer</a>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="tp-number">TP-06</span>
+                    <span class="badge intermediate">Intermédiaire</span>
+                </div>
+                <h3 class="card-title">Intégration d'Hadolint en CI</h3>
+                <p class="card-desc">Automatisation de l'analyse statique des Dockerfiles dans un pipeline factice d'intégration continue (CI).</p>
+                <a href="tp-06-hadolint-integration/tp-06.html" class="btn">Commencer</a>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="tp-number">TP-07</span>
+                    <span class="badge advanced">Avancé</span>
+                </div>
+                <h3 class="card-title">Scan de Sécurité avec Trivy</h3>
+                <p class="card-desc">Découverte et analyse des vulnérabilités (CVEs) dans les images Docker avec l'outil open-source Trivy, et remédiation.</p>
+                <a href="tp-07-trivy-image-scan/tp-07.html" class="btn">Commencer</a>
+            </div>
+
+        </div>
+
+        <!-- MODULE 3: Docker Compose & Production -->
+        <h2 class="section-title">Module 3 : Docker Compose & Production</h2>
+        <div class="tps-grid">
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="tp-number">TP-08</span>
+                    <span class="badge beginner">Débutant</span>
+                </div>
+                <h3 class="card-title">Introduction à Docker Compose</h3>
+                <p class="card-desc">Transition des commandes <code>docker run</code> complexes vers une syntaxe déclarative YAML (services, env vars, dépendances).</p>
+                <a href="tp-08-docker-compose-beginner/tp-08.html" class="btn">Commencer</a>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="tp-number">TP-09</span>
+                    <span class="badge intermediate">Intermédiaire</span>
+                </div>
+                <h3 class="card-title">Docker Compose Intermédiaire</h3>
+                <p class="card-desc">Configuration des volumes nommés en Compose, création de réseaux isolés (front-tier / back-tier), et scalabilité.</p>
+                <a href="tp-09-docker-compose-intermediate/tp-09.html" class="btn">Commencer</a>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="tp-number">TP-10</span>
+                    <span class="badge advanced">Avancé</span>
+                </div>
+                <h3 class="card-title">Docker Compose Avancé</h3>
+                <p class="card-desc">Orchestration avancée avec des Healthchecks (services prêts contre services en cours) et limitations de ressources CPU/RAM.</p>
+                <a href="tp-10-docker-compose-advanced/tp-10.html" class="btn">Commencer</a>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="tp-number">TP-11</span>
+                    <span class="badge advanced">Avancé</span>
+                </div>
+                <h3 class="card-title">Observabilité : Logs et Santé</h3>
+                <p class="card-desc">Gestion des drivers de log (rotation de fichiers JSON) et mise en place de sondes d'applications HTTP personnalisées.</p>
+                <a href="tp-11-observability-logs-health/tp-11.html" class="btn">Commencer</a>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="tp-number">TP-12</span>
+                    <span class="badge expert">Expert</span>
+                </div>
+                <h3 class="card-title">Stack de Production (Expert)</h3>
+                <p class="card-desc">Combinaison complète : Builds Multi-Stage, Nginx Proxy inverse, CI Pipeline automatique (Lint+Scan), Healthchecks, Réseaux isolés.</p>
+                <a href="tp-12-production-ready-stack/tp-12.html" class="btn">Commencer</a>
+            </div>
+
+        </div>
+    </main>
+
+    <footer>
+        <p>Formation DevOps par la pratique — Docker & Docker Compose</p>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TP-03 : Volumes et Réseaux</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/style.css">
+    <script src="../assets/main.js" defer></script>
+</head>
+<body>
+
+    <header>
+        <div class="brand"><span>&gt;_</span> Docker TPs</div>
+        <a href="../index.html" class="back-btn">⬅ Retour aux TPs</a>
+    </header>
+
+    <main class="container">
+        <div class="tp-header">
+            <h1>TP-03 : Volumes et Réseaux (Networks)</h1>
+            <div class="tp-meta">
+                <span class="badge beginner">Débutant</span>
+                <span>⏱ Durée estimée : 45 min</span>
+            </div>
+        </div>
+
+        <div class="tp-content">
+            <h2>🎯 Objectifs d'apprentissage</h2>
+            <ul>
+                <li>Utiliser des <strong>volumes nommés</strong> pour assurer la persistance de l'état (bases de données).</li>
+                <li>Utiliser les <strong>bind mounts</strong> pour brancher un dossier local dans Docker (idéal dev local).</li>
+                <li>Créer un réseau de type <code>bridge</code> défini par l'utilisateur.</li>
+                <li>Vérifier la bonne résolution DNS inter-conteneurs (communication via le nom et non l'IP).</li>
+            </ul>
+
+            <!-- Steps -->
+            <h2>📝 Étape par étape</h2>
+
+            <h3>Étape 1 : Les Volumes Nommés (Persistance Absolue)</h3>
+            <p>Si vous détruisez un conteneur MySQL, les données meurent avec lui. Pour éviter cela, Docker gère des disques durs virtuels appelés "Volumes".</p>
+            
+            <p>Créons un volume manuellement :</p>
+<pre><code>docker volume create mon-stockage
+docker volume ls</code></pre>
+            
+            <p>Lançons un petit conteneur qui écrit un mot de passe dans ce fameux volume localisé dans le dossier <code>/data</code>, puis qui se détruit immédiatement (<code>--rm</code>) :</p>
+<pre><code>docker run --rm -v mon-stockage:/data alpine sh -c "echo 'MotDePasseSecret123' > /data/fic.txt"</code></pre>
+            
+            <p>Vérifions maintenant si la donnée a survécu à la suppression du conteneur en lançant un autre conteneur complétement différent qui "branche" (monte) le même disque :</p>
+<pre><code>docker run --rm -v mon-stockage:/data alpine cat /data/fic.txt</code></pre>
+            <p>Résultat magique : la chaîne "MotDePasseSecret123" est toujours là. Le cycle de vie des données a été découplé du cycle de vie du conteneur !</p>
+
+
+            <h3>Étape 2 : Les Bind Mounts (Partage de dossier Hôte-Conteneur)</h3>
+            <p>Un cas classique pour un développeur consiste à vouloir que le code source exécuté par nginx ou nodeJS reflète instantanément le fichier modifié sur la machine physique via VSCode. C'est le but du Bind Mount.</p>
+
+            <p>Commencez par créer un fichier sur votre bureau :</p>
+<pre><code>echo "&lt;h1&gt;Index du developpeur local&lt;/h1&gt;" > index.dev.html</code></pre>
+
+            <p>Lançons Nginx en liant notre répertoire courant matériel au dossier virtuel de web racine d'Nginx. <br>
+            <i>(Sous Windows Powershell remplacez <code>$(pwd)</code> par <code>${PWD}</code>)</i></p>
+<pre><code>docker run -d --name nginx-dev -p 8080:80 -v "$(pwd):/usr/share/nginx/html" nginx:alpine</code></pre>
+
+            <p>Visitez <code>http://localhost:8080/index.dev.html</code>. Maintenant, ouvrez le fichier avec le Bloc-notes / VSCode sur votre PC, modifiez le texte, sauvegardez et rafraîchissez simplement la page : C'est instantané !</p>
+
+
+            <h3>Étape 3 : Réseaux virtuels internes isolés</h3>
+            <p>Les applications doivent communiquer entre elles (un backend parle à une base de données). Si on les lance sur le port par défaut de Docker, elles ne peuvent de s'adresser mutuellement que par des adresses IP qui changent tout le temps. Solution : créer son propre réseau virtuel.</p>
+
+<pre><code>docker network create mon-reseau-prive</code></pre>
+
+            <p>Démarrons le serveur qui s'exécutera à l'infini sur ce réseau :</p>
+<pre><code>docker run -d --name serveur-critique --network mon-reseau-prive alpine sleep infinity</code></pre>
+
+            <p>Démarrons le client interactif sur ce <strong>même</strong> réseau :</p>
+<pre><code>docker run -it --rm --name client --network mon-reseau-prive alpine sh</code></pre>
+
+            <p>À l'intérieur du conteneur client, tentez un PING sur le NOM du serveur (et non son IP) :</p>
+<pre><code>/ # ping -c 3 serveur-critique
+/ # exit</code></pre>
+            <p>Une véritable résolution DNS interne est intégrée par les réseaux "bridge" personnalisés !</p>
+
+
+            <h3>Étape 4 : Nettoyage</h3>
+<pre><code>docker stop nginx-dev serveur-critique
+docker rm nginx-dev serveur-critique
+docker volume rm mon-stockage
+docker network rm mon-reseau-prive
+rm index.dev.html</code></pre>
+
+            <h2>❓ Questions de validation</h2>
+            <ol>
+                <li>Pourquoi ne devrait-on théoriquement pas utiliser un "Bind mount" pointant sur le disque de l'administration système locale pour stocker la Data d'une base Postgres en production ?</li>
+                <li>D'un point de vue de la gestion, quelle est la différence entre le cycle de vie d'un conteneur et celui d'un volume nommé ?</li>
+                <li>Comment faire pour que mon conteneur API puisse contacter le conteneur REDIS sans connaître au préalable son adresse IP Docker interne ?</li>
+            </ol>
+
+        </div>
+    </main>
+
+    <footer>
+        <p>Formation DevOps par la pratique — Docker & Docker Compose</p>
+    </footer>
+
+</body>
+</html>

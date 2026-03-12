@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TP-07 : Scan de Vulnérabilités avec Trivy</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/style.css">
+    <script src="../assets/main.js" defer></script>
+</head>
+<body>
+
+    <header>
+        <div class="brand"><span>&gt;_</span> Docker TPs</div>
+        <a href="../index.html" class="back-btn">⬅ Retour aux TPs</a>
+    </header>
+
+    <main class="container">
+        <div class="tp-header">
+            <h1>TP-07 : Scan Applicatif et Système avec Trivy</h1>
+            <div class="tp-meta">
+                <span class="badge advanced">Avancé</span>
+                <span>⏱ Durée estimée : 30 min</span>
+            </div>
+        </div>
+
+        <div class="tp-content">
+            <h2>🎯 Objectifs d'apprentissage</h2>
+            <ul>
+                <li>Exécuter un scanner asynchrone pour déceler passivement les Common Vulnerabilities and Exposures (CVE) dans les librairies O.S d'une image Docker existante.</li>
+                <li>Configurer <strong>Trivy</strong> de Aqua-Security et filtrer la sévérité ciblée (HIGH/CRITICAL).</li>
+                <li>Empêcher la livraison d'une image vérolée vers un registre d'entreprise de manière dynamique.</li>
+            </ul>
+
+            <!-- Steps -->
+            <h2>📝 Étape par étape</h2>
+
+            <h3>Étape 1 : Fabriquer la victime (Image Vulnérable)</h3>
+            <p>Observez <code>Dockerfile.vulnerable</code>. Ce fichier force le tag pré-historique <code>ubuntu:18.04</code> et demande volontairement la librairie <code>libssl1.1</code> de version d'époque (avant des immenses audits de failles de sécurité).</p>
+
+            <p>Construisons-la sur le disque et baptisons-la <code>secure-app:vulnerable</code> :</p>
+<pre><code>docker build -f Dockerfile.vulnerable -t secure-app:vulnerable .</code></pre>
+
+            <h3>Étape 2 : Scan Standard via Trivy</h3>
+            <p>Scannons maintenant la création (Il est conseillé de passer par son Docker si Trivy n'est pas nativement installé sur le PC). L'argument du socket docker permet à Trivy de voir et décomposer votre disque image local.</p>
+
+<pre><code>docker run --rm -v /var/run/docker.sock:/var/run/docker.sock aquasec/trivy image secure-app:vulnerable</code></pre>
+
+            <p>Observez. Le scanner trouve la distribution (Ubuntu Bionic 18) et compile plus de DEUX-CENT alertes qui défilent. Le tableau montre pour chaque vulnérabilité la référence `CVE`, le packet incriminé, et s'il existait déjà une mise à jour correctrice (`Fixed Version`).</p>
+
+            <h3>Étape 3 : Filtre de "Tolérance de la Douleur" et Fail du Job</h3>
+            <p>En entreprise, c'est intenable d'interdire le commit et la livraison en production pour la moindre CVE de type "LOW" / "UNKNOWN" sans patch correctif exisant et mineur. La tolérance générale accepte le `Exit 0` sans crash pipeline pour ces petites blessures.</p>
+            <p>Exécutons notre script pré-préparé :</p>
+<pre><code>chmod +x scripts/run-trivy.sh
+./scripts/run-trivy.sh secure-app:vulnerable</code></pre>
+
+            <p><strong>Script Décortiqué :</strong> </p>
+            <ul>
+                <li><code>--severity HIGH,CRITICAL</code> (n'interceptez et filtrez que le grave de chez grave)</li>
+                <li><code>--ignore-unfixed</code> (ne plantez pas s'il n'y a de toute façon aucun patch publié qui résout le soucis découvert).</li>
+                <li><code>--exit-code 1</code> (demander au programme Trivy d'écraser son code de succès final en lui imposant l'échec).</li>
+            </ul>
+
+            <h3>Étape 4 : Validation du fix sur base Alpine Pure</h3>
+            <p>Regardez <code>Dockerfile.fixed</code>. C'est du "Hardened" propre, alpine ultra limitative, sans résidu d'outil complexe.</p>
+<pre><code>docker build -f Dockerfile.fixed -t secure-app:fixed .
+./scripts/run-trivy.sh secure-app:fixed</code></pre>
+            <p><strong>Le statut vert absolu est renvoyé ("passed the security scan!") !</strong></p>
+
+            <h3>Étape 5 : Nettoyages Disque</h3>
+<pre><code>docker rmi secure-app:vulnerable secure-app:fixed</code></pre>
+
+            <h2>❓ Questions de validation</h2>
+            <ol>
+                <li>Quelle vulnérabilité "énorme" le fait de changer l'O.S. parent (le `FROM ...`) apporte-t-il vis-à-vis d'un package applicatif propre NodeJS ou Python ?</li>
+                <li>Pourquoi est-il absurde d'exiger d'un pipeline qu'il rejète les "LOW CVE Without FIX" lors d'un build en plein jour de la semaine ?</li>
+            </ol>
+
+        </div>
+    </main>
+
+    <footer>
+        <p>Formation DevOps par la pratique — Docker & Docker Compose</p>
+    </footer>
+
+</body>
+</html>
