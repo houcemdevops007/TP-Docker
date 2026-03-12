@@ -1,0 +1,41 @@
+# ENRICHED: Using YAML anchors/aliases (`x-logging`) to not repeat code!
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "secretpassword"
+      POSTGRES_DB: "test"
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    networks:
+      - back-tier
+    logging: *default-logging
+
+  adminer:
+    image: adminer:latest
+    restart: always
+    ports:
+      - "8080:8080"
+    networks:
+      - front-tier
+      - back-tier
+    depends_on:
+      - db
+    logging: *default-logging
+
+# ENRICHED: Explicit explicit volume definition
+volumes:
+  db-data:
+    name: "tp09_db_data_enriched" # Explicit docker volume name
+
+networks:
+  front-tier:
+  back-tier:

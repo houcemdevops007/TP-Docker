@@ -1,0 +1,13 @@
+FROM ubuntu:latest
+
+# ENRICHED BAD PRACTICE: Exposing a fake secret in the Dockerfile
+ENV AWS_ACCESS_KEY_ID="AKIAIOSFODNN7EXAMPLE"
+ENV AWS_SECRET_ACCESS_KEY="wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+
+# Bad: apt-get update and install in separate layers without cleaning cache
+RUN apt-get update
+RUN apt-get install -y curl
+RUN apt-get install -y python3
+
+# Bad: Running as root
+CMD ["python3", "-m", "http.server"]

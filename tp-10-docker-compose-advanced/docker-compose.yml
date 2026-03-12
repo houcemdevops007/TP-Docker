@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "secretpassword"
+    # ENRICHED: The exact standard for waiting for DB
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ENRICHED: An API that only starts if DB is strictly healthy!
+  api:
+    image: alpine:latest
+    command: ["sh", "-c", "echo 'API started ONLY because DB is ready!' && sleep 3600"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ENRICHED: "PROFILES" feature. This background worker won't start unless we type:
+  # docker compose --profile tools up -d
+  debug-tool:
+    image: busybox
+    profiles: ["tools"]
+    command: ["ping", "db"]
+    depends_on:
+      - db

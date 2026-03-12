@@ -1,0 +1,17 @@
+# Ignore absolute everything Git related
+.git
+.gitignore
+
+# Ignore python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ignore virtual environments
+venv/
+env/
+.env
+
+# Ignore Dockerfile and dockerignore itself to avoid circular copy
+Dockerfile
+.dockerignore

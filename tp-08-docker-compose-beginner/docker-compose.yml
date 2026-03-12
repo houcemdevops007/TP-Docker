@@ -1,0 +1,20 @@
+services:
+  web:
+    # ENRICHED: Using an inline build context but with an external base image for speed
+    image: nginx:alpine
+    ports:
+      # ENRICHED: Port injected dynamically from .env file
+      - "${WEB_PORT:-8000}:80"
+    restart: ${RESTART_POLICY}
+    depends_on:
+      - cache
+
+  cache:
+    image: redis:${REDIS_VERSION}
+    restart: ${RESTART_POLICY}
+    # ENRICHED: Explicit resource limits for beginner safety
+    deploy:
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 128M
